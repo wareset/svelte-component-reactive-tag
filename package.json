@@ -8,9 +8,10 @@
   "license": "MIT",
   "files": [
     "scripts",
-    "src",
+    "util",
     "index.js",
     "LICENSE",
+    "Node.svelte",
     "preprocess.js",
     "README.md"
   ],
