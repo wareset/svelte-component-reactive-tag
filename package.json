@@ -2,13 +2,14 @@
   "name": "svelte-plugin-node",
   "version": "0.0.1",
   "description": "The reactive node component for svelte",
-  "main": "preprocess.js",
+  "main": "index.js",
   "repository": "https://github.com/wareset/svelte-plugin-node.git",
   "author": "wareset <git@wareset.com>",
   "license": "MIT",
   "files": [
     "scripts",
     "src",
+    "index.js",
     "LICENSE",
     "preprocess.js",
     "README.md"
@@ -17,12 +18,13 @@
     "build": "node ./scripts/build.js"
   },
   "peerDependencies": {
-    "svelte": "3.x"
-  },
-  "devDependencies": {
-    "magic-string": "^0.25.7"
+    "svelte": "^3.24.1"
   },
   "dependencies": {
-    "css-property-normalize": "^1.0.1"
+    "@wareset/deep-equal": "^0.0.5",
+    "@wareset/typed": "^0.1.1",
+    "@wareset/unique": "^1.0.2",
+    "css-property-normalize": "^1.0.1",
+    "magic-string": "^0.25.7"
   }
 }
