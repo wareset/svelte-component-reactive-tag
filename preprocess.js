@@ -1,3 +1,4 @@
+const { addScriptTag, parseHtml, trimQuotes } = require('./scripts/lib/parse_utilites');
 const { build_tag, check_tag } = require('./scripts/lib');
 const opts_normalize = require('./scripts/lib/opts_normalize');
 const get_filename = require('./scripts/lib/get_filename');
@@ -20,7 +21,7 @@ const fix_raw = (v, is = false) => {
 };
 
 function normalize_attrs(v, code, is_attrs = false) {
-  const res = [];
+  let res = [];
   if (!v.value) return res;
   if (!Array.isArray(v.value)) return [v.value];
   v.value.forEach(v => {
@@ -28,12 +29,15 @@ function normalize_attrs(v, code, is_attrs = false) {
     if (v.type === 'MustacheTag') {
       raw = code.slice(v.expression.start, v.expression.end);
     } /*if (v.type === 'Text')*/ else {
-      raw = JSON.stringify(v.data || v.raw) || v.expression.name;
+      raw = (v.data || v.raw);
+      raw = JSON.stringify(raw) || v.expression.name;
     }
+    if (!trimQuotes(raw)) return;
     // console.log(is_attrs, raw);
     raw = fix_raw(raw, is_attrs);
     res.push(raw);
   });
+  res = res.map(v => v.trim()).filter(v => v !== '');
   return res;
 }
 
@@ -44,23 +48,11 @@ function wrap(v, is_attrs = false) {
   return res.replace(/\\"/g, '"');
 }
 
-const reg_ex = new RegExp(`<(script|style)[^]*?>[^]*?<\/(script|style)>`, 'gi');
 function walker(content, filename, cmp_name) {
-  let code = content;
-  const excludes = [];
-  (content.match(reg_ex) || []).forEach(text => {
-    const start = code.indexOf(text);
-    excludes.push({ text, start });
-    code = code.replace(text, '');
-  });
-
+  const code = content;
   const magic = new MagicString(code);
-  excludes.forEach(v => magic.prependRight(v.start, v.text));
-
-  const html = svelte.parse(code, { filename }).html;
-
   let need_inject = false;
-  svelte.walk(html, {
+  svelte.walk(parseHtml(content), {
     enter(node /*, parent, prop, index*/) {
       if (node.name === cmp_name) {
         if (!need_inject) need_inject = true;
@@ -111,7 +103,7 @@ function walker(content, filename, cmp_name) {
             if (v.expression) {
               _use_.push(code.slice(v.expression.start, v.expression.end));
             }
-            actions.push('[' + _use_.join(',') + ']');
+            actions.push('[' + _use_.map(v => v.trim()).filter(v => v).join(',') + ']');
           } else if (v.type === 'Attribute') {
             attributes.push(
               JSON.stringify(v.name) +
@@ -145,7 +137,7 @@ const create_inject = (opts, cmp_name) => {
 };
 
 const reg_cmp = new RegExp(
-  `import[\\s\\n]+([\\w]*?)[\\s\\n]+from[\\s\\n]+[\`'"]${name}[^]*?[\`'"]\\;*`,
+  `^import[\\s\\n]+([\\w]*?)[\\s\\n]+from[\\s\\n]+[\`'"]${name}[^]*?[\`'"]\\;*`,
   'im'
 );
 
@@ -180,7 +172,7 @@ module.exports = function sveltePluginNode(opts = {}, _cmp_name = 'Node') {
 
       let code = magic.toString();
       if (code.indexOf(inject) < 0) {
-        if (code.indexOf('</script>') < 0) code += '\n<script>\n</script>\n';
+        code = addScriptTag(code);
         code = code.replace('</script>', inject + '\n</script>');
       }
 
