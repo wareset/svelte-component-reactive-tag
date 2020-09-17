@@ -80,7 +80,6 @@
         break;
       case 'input':
         if (type === 'checkbox' || type === 'radio') {
-          console.log(group$.$);
           checked = !!element.checked;
         }
       default:
@@ -226,14 +225,7 @@
       else needUpdate$.setSure(true);
     }
 
-    const unsubscribes = [
-      needUpdate$.subscribe(need_update),
-      group$.subscribe(async group => {
-        // await tick();
-        // component.$set({ group });
-        // console.log(value, group);
-      })
-    ];
+    const unsubscribes = [needUpdate$.subscribe(need_update)];
 
     return () => unsubscribes.forEach(v => v());
   });
