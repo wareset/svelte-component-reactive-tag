@@ -1,4 +1,8 @@
-const { addScriptTag, parseHtml, trimQuotes } = require('./scripts/lib/parse_utilites');
+const {
+  addScriptTag,
+  parseHtml,
+  trimQuotes
+} = require('./scripts/lib/parse_utilites');
 const { build_tag, check_tag } = require('./scripts/lib');
 const opts_normalize = require('./scripts/lib/opts_normalize');
 const get_filename = require('./scripts/lib/get_filename');
@@ -29,8 +33,10 @@ function normalize_attrs(v, code, is_attrs = false) {
     if (v.type === 'MustacheTag') {
       raw = code.slice(v.expression.start, v.expression.end);
     } /*if (v.type === 'Text')*/ else {
-      raw = (v.data || v.raw);
-      raw = JSON.stringify(raw) || v.expression.name;
+      raw = v.data || v.raw;
+      raw =
+        JSON.stringify(typeof raw === 'string' ? raw.trim() : raw) ||
+        v.expression.name;
     }
     if (!trimQuotes(raw)) return;
     // console.log(is_attrs, raw);
@@ -43,6 +49,7 @@ function normalize_attrs(v, code, is_attrs = false) {
 
 function wrap(v, is_attrs = false) {
   let res;
+  // v = v.map(v => v.trim());
   if (is_attrs) res = JSON.stringify('{{' + v.join(',') + '}}');
   else res = JSON.stringify('{[' + v.join(',') + ']}');
   return res.replace(/\\"/g, '"');
@@ -59,7 +66,6 @@ function walker(content, filename, cmp_name) {
         // console.log(node);
         const start = node.start;
         let end = start + cmp_name.length + 1;
-        let tag = [];
         const classes = [];
         const styles = [];
         const attributes = [];
@@ -71,56 +77,91 @@ function walker(content, filename, cmp_name) {
 
           // console.log(v);
 
-          if (
-            v.type === 'Attribute' &&
-            (v.name === 'type' ||
-              v.name === 'value' ||
-              v.name === 'group' ||
-              v.name === 'checked' ||
-              v.name === 'indeterminate')
-          ) {
-            others.push(code.slice(v.start, v.end));
-          }
-
-          if (v.type === 'Attribute' && v.name === 'tag') {
-            tag = [code.slice(v.start, v.end)];
-          } else if (v.type === 'Attribute' && v.name === 'class') {
-            classes.push(...normalize_attrs(v, code));
-          } else if (v.type === 'Attribute' && v.name === 'style') {
-            styles.push(...normalize_attrs(v, code));
-          } else if (v.type === 'Attribute' && v.name === 'use') {
-            actions.push(...normalize_attrs(v, code));
-          } else if (v.type === 'Attribute' && v.name === 'attributes') {
-            attributes.push(...normalize_attrs(v, code, true));
-          } else if (v.type === 'Attribute' && v.name === 'on') {
-            events.push(...normalize_attrs(v, code, true));
-          } else if (v.type === 'Class') {
+          if (v.type === 'Class') {
             const _class_ = [JSON.stringify(v.name)];
             _class_.push(code.slice(v.expression.start, v.expression.end));
             classes.push('{' + _class_.join(':') + '}');
-          } else if (v.type === 'Action') {
+
+            return;
+          }
+
+          if (v.type === 'Action') {
             const _use_ = [v.name];
             if (v.expression) {
               _use_.push(code.slice(v.expression.start, v.expression.end));
             }
-            actions.push('[' + _use_.map(v => v.trim()).filter(v => v).join(',') + ']');
-          } else if (v.type === 'Attribute') {
+            actions.push(
+              '[' +
+                _use_
+                  .map(v => v.trim())
+                  .filter(v => v)
+                  .join(',') +
+                ']'
+            );
+
+            return;
+          }
+
+          if (v.type === 'Attribute') {
+            if (
+              v.name === 'tag' ||
+              v.name === 'id' ||
+              v.name === 'type' ||
+              v.name === 'value' ||
+              v.name === 'group' ||
+              v.name === 'checked' ||
+              v.name === 'indeterminate'
+            ) {
+              others.push(code.slice(v.start, v.end));
+              return;
+            }
+
+            if (v.name === 'class') {
+              classes.push(...normalize_attrs(v, code));
+              return;
+            }
+
+            if (v.name === 'style') {
+              styles.push(...normalize_attrs(v, code));
+              return;
+            }
+
+            if (v.name === 'use') {
+              actions.push(...normalize_attrs(v, code));
+              return;
+            }
+
+            if (v.name === 'attributes') {
+              attributes.push(...normalize_attrs(v, code, true));
+              return;
+            }
+
+            if (v.name === 'on') {
+              events.push(...normalize_attrs(v, code, true));
+              return;
+            }
+
             attributes.push(
               JSON.stringify(v.name) +
                 ':' +
                 (normalize_attrs(v, code).join() || v.name)
             );
-          } else others.push(code.slice(v.start, v.end));
+
+            return;
+          }
+
+          others.push(code.slice(v.start, v.end));
         });
+
         // console.log([code.slice(start, end)]);
         // console.log({ tag, classes, styles, actions, attributes });
 
-        const newTag = `<${cmp_name} ${tag.join('')} class=${wrap(
+        const newTag = `<${cmp_name} ${others.join(' ')} class=${wrap(
           classes
         )} style=${wrap(styles)} use=${wrap(actions)} attributes=${wrap(
           attributes,
           true
-        )} on=${wrap(events, true)} ${others.join(' ')}`;
+        )} on=${wrap(events, true)}`;
         // console.log(newTag);
         magic.overwrite(start, end, newTag);
       }
@@ -137,7 +178,7 @@ const create_inject = (opts, cmp_name) => {
 };
 
 const reg_cmp = new RegExp(
-  `^import[\\s\\n]+([\\w]*?)[\\s\\n]+from[\\s\\n]+[\`'"]${name}[^]*?[\`'"]\\;*`,
+  `import[\\s\\n]+([\\w]*?)[\\s\\n]+from[\\s\\n]+[\`'"]${name}[^]*?[\`'"]\\;*`,
   'im'
 );
 
@@ -153,10 +194,15 @@ function get_cmp_name(content, opts, _cmp_name) {
   return is ? { content, cmp_name, inject } : {};
 }
 
-module.exports = function sveltePluginNode(opts = {}, _cmp_name = 'Node') {
+module.exports = function PREPROCESS(
+  opts = {},
+  _cmp_name = 'SveltePluginElement'
+) {
   opts = opts_normalize(opts);
+  // check_tag(opts);
+  build_tag(opts);
 
-  let is_started = false;
+  // let is_started = false;
   return {
     markup: ({ content, filename }) => {
       let cmp_name, inject;
@@ -167,8 +213,8 @@ module.exports = function sveltePluginNode(opts = {}, _cmp_name = 'Node') {
 
       if (!need_inject) return null;
 
-      if (!is_started) (is_started = true), build_tag(opts);
-      else check_tag(opts);
+      // if (!is_started) (is_started = true), build_tag(opts);
+      // else check_tag(opts);
 
       let code = magic.toString();
       if (code.indexOf(inject) < 0) {

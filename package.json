@@ -1,28 +1,33 @@
 {
-  "name": "svelte-plugin-node",
+  "name": "svelte-plugin-element",
   "version": "0.0.1",
-  "description": "The reactive node component for svelte",
+  "description": "Component for creating functional html-elements",
   "main": "index.js",
-  "repository": "https://github.com/wareset/svelte-plugin-node.git",
+  "repository": "https://github.com/wareset/svelte-plugin-element.git",
   "author": "wareset <git@wareset.com>",
   "license": "MIT",
   "files": [
     "scripts",
+    "test",
     "util",
     "index.js",
     "LICENSE",
-    "Node.svelte",
+    "Element.svelte",
     "preprocess.js",
     "README.md"
   ],
-  "scripts": {
-    "build": "node ./scripts/build.js"
-  },
+  "keywords": [
+    "svelte",
+    "plugin",
+    "component",
+    "element"
+  ],
   "peerDependencies": {
-    "svelte": "^3.24.1"
+    "svelte": "3.x"
   },
   "dependencies": {
-    "@wareset/deep-equal": "^0.0.5",
+    "@wareset/deep-equal": "^0.0.6",
+    "@wareset/store": "0.2.3",
     "@wareset/typed": "^0.1.1",
     "@wareset/unique": "^1.0.2",
     "css-property-normalize": "^1.0.1",

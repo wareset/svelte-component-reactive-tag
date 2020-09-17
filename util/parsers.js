@@ -16,11 +16,10 @@ function _get_classes(...args) {
         Object.keys(a).forEach(v => a[v] && res.push(v));
         break;
       case String.prototype:
-      case Number.prototype:
-      case Boolean.prototype:
-        res.push('' + a);
+        res.push(a);
         break;
       default:
+        res.push('' + (a || ''));
         break;
     }
   }
@@ -55,6 +54,7 @@ function _get_styles(...args) {
         res.push(a);
         break;
       default:
+        res.push('' + (a || ''));
         break;
     }
   }
@@ -65,22 +65,30 @@ function styles(...args) {
   return parse_css(_get_styles(...args).join(';'));
 }
 
+const isBrowser = (() => typeof window !== 'undefined')();
 // ATTRS
-function _get_attributes(attrs = {}) {
+function _get_attributes(attrs = {}, component) {
   const res = {};
   if (!typed(attrs, Object)) return res;
 
   Object.keys(attrs).forEach(k => {
-    if (k === 'class' || k === 'style' || k === 'use' || k === 'on') return;
-    if (
-      k === 'id' ||
-      k === 'type' ||
-      k === 'value' ||
-      k === 'group' ||
-      k === 'checked' ||
-      k === 'indeterminate'
-    )
+    if (k === 'class' || k === 'style' || k === 'use' || k === 'on') {
       return;
+    }
+
+    if (
+      isBrowser &&
+      (k === 'id' ||
+        k === 'type' ||
+        k === 'value' ||
+        k === 'group' ||
+        k === 'checked' ||
+        k === 'indeterminate')
+    ) {
+      if (component && component.$set) component.$set({ [k]: attrs[k] });
+      return;
+    }
+
     const v = attrs[k];
     if (!(v === null || v === undefined)) {
       res[k] = v === '' || typeof v === 'object' ? true : v;
@@ -89,8 +97,8 @@ function _get_attributes(attrs = {}) {
   return res;
 }
 
-function attributes(attrs) {
-  return _get_attributes(attrs);
+function attributes(attrs, component) {
+  return _get_attributes(attrs, component);
 }
 
 module.exports = {
