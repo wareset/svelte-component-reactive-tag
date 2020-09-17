@@ -1,6 +1,6 @@
 {
   "name": "svelte-plugin-element",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Component for creating functional html-elements",
   "main": "index.js",
   "repository": "https://github.com/wareset/svelte-plugin-element.git",
