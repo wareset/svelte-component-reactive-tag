@@ -1,4 +1,4 @@
-const typed = require('@wareset/typed');
+const typed = require('@wareset-utilites/typed');
 
 module.exports = function opts_normalize(opts = {}) {
   if (!typed(opts, Object)) opts = {};

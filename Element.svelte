@@ -1,6 +1,6 @@
 <script context="module">
-  import deepEqual from '@wareset/deep-equal';
-  import _unique from '@wareset/unique';
+  import deepEqual from '@wareset-utilites/deep-equal';
+  import _unique from '@wareset-utilites/unique';
   import store from '@wareset/store';
 
   const not_equal = (a, b) => !deepEqual(a, b, 0);

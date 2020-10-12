@@ -2,6 +2,8 @@
 
 Component for creating functional html-elements
 
+### !!!In progress!!!
+
 > **Attention:**
 > It is difficult to install and may stop working with the next update Svelte. Use at your own risk.
 

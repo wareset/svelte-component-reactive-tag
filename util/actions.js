@@ -1,7 +1,7 @@
 const { bubble, listen } = require('svelte/internal');
-const deep_equal = require('@wareset/deep-equal');
-const unique = require('@wareset/unique');
-// const typed = require('@wareset/typed');
+const deep_equal = require('@wareset-utilites/deep-equal');
+const unique = require('@wareset-utilites/unique');
+// const typed = require('@wareset-utilites/typed');
 
 // EVENTS
 function events_factory(component) {

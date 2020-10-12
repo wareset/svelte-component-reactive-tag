@@ -1,5 +1,5 @@
-const unique = require('@wareset/unique');
-const typed = require('@wareset/typed');
+const unique = require('@wareset-utilites/unique');
+const typed = require('@wareset-utilites/typed');
 const parse_css = require('./lib/parse_css');
 
 // CLASSES
@@ -9,14 +9,11 @@ function _get_classes(...args) {
     const a = args.length === 1 ? args[0] : args;
 
     switch (typed(a)) {
-      case Array.prototype:
+      case Array:
         a.forEach(v => res.push(..._get_classes(v)));
         break;
-      case Object.prototype:
+      case Object:
         Object.keys(a).forEach(v => a[v] && res.push(v));
-        break;
-      case String.prototype:
-        res.push(a);
         break;
       default:
         res.push('' + (a || ''));
@@ -40,18 +37,13 @@ function _get_styles(...args) {
     const a = args.length === 1 ? args[0] : args;
 
     switch (typed(a)) {
-      case Array.prototype:
+      case Array:
         a.forEach(v => res.push(..._get_styles(v)));
         break;
-      case Object.prototype:
+      case Object:
         Object.keys(a).forEach(v => {
-          if (a[v] && (typeof a[v] === 'number' || typeof a[v] === 'string')) {
-            res.push(`${v}:${a[v]}`);
-          }
+          if (a[v]) res.push(`${v}:${a[v]}`);
         });
-        break;
-      case String.prototype:
-        res.push(a);
         break;
       default:
         res.push('' + (a || ''));

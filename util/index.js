@@ -4,7 +4,7 @@ const {
   attributes: parse_attributes
 } = require('./parsers');
 const { actions, events_factory } = require('./actions');
-const deep_equal = require('@wareset/deep-equal');
+const deep_equal = require('@wareset-utilites/deep-equal');
 const parse_css = require('./lib/parse_css');
 // const { get_current_component } = require('svelte/internal');
 

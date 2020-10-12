@@ -26,10 +26,10 @@
     "svelte": "3.x"
   },
   "dependencies": {
-    "@wareset/deep-equal": "^0.0.6",
-    "@wareset/store": "0.2.3",
-    "@wareset/typed": "^0.1.1",
-    "@wareset/unique": "^1.0.2",
+    "@wareset-utilites/deep-equal": "0.0.13",
+    "@wareset-utilites/typed": "0.2.6",
+    "@wareset-utilites/unique": "1.0.6",
+    "@wareset/store": "0.3.6",
     "css-property-normalize": "^1.0.1",
     "magic-string": "^0.25.7"
   }
